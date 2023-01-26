@@ -15,6 +15,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private bool canCrouch = true;
     [SerializeField] private bool canUseHeadbob = true;
     [SerializeField] private bool canZoom = true;
+    [SerializeField] private bool canInteract = true;
     [SerializeField] private bool willSlideOnSlopes = true;
 
 
@@ -25,6 +26,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private KeyCode jumpKey = KeyCode.Space;
     [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
     [SerializeField] private KeyCode zoomKey = KeyCode.Mouse1;
+    [SerializeField] private KeyCode interactKey = KeyCode.Mouse0;
 
 
 
@@ -71,6 +73,11 @@ public class FirstPersonController : MonoBehaviour
     private float defaultFOV;
     private Coroutine zoomRoutine;
 
+    [Header("Interaction")]
+    [SerializeField] private Vector3 interactionRayPoint = default;
+    [SerializeField] private float interactionDistance = default;
+    [SerializeField] private LayerMask interactionLayer = default;
+    private Interactable currentInteractable;
 
     // Sliding Parameters
 
@@ -133,6 +140,11 @@ public class FirstPersonController : MonoBehaviour
             if (canZoom)
             {
                 HandleZoom();
+            }
+            if (canInteract)
+            {
+                HandleInteractionCheck();
+                HandleInteractionInput();
             }
             ApplyFinalMovements();
         }
@@ -202,6 +214,34 @@ public class FirstPersonController : MonoBehaviour
             }
 
             zoomRoutine = StartCoroutine(ToggleZoom(false)); //stops zoom
+        }
+    }
+
+    private void HandleInteractionCheck() //raycasts and looks for things to interact with
+    {
+        if(Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance))
+        {
+            if (hit.collider.gameObject.layer == 6 && (currentInteractable == null || hit.collider.gameObject.GetInstanceID() != currentInteractable.gameObject.GetInstanceID()))
+            {
+                hit.collider.TryGetComponent(out currentInteractable);
+
+                if (currentInteractable)
+                {
+                    currentInteractable.OnFocus();
+                }
+            }
+        }
+        else if(currentInteractable)
+        {
+            currentInteractable.OnLoseFocus();
+            currentInteractable = null;
+        }
+    }
+    private void HandleInteractionInput() //when you press interaction key
+    {
+        if(Input.GetKeyDown(interactKey) && currentInteractable != null && Physics.Raycast(playerCamera.ViewportPointToRay(interactionRayPoint), out RaycastHit hit, interactionDistance, interactionLayer))
+        {
+            currentInteractable.OnInteract();
         }
     }
     private void ApplyFinalMovements()
