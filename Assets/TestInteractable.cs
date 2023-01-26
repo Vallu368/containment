@@ -6,48 +6,42 @@ using TMPro;
 public class TestInteractable : Interactable
 {
     public bool isInteracting;
-    public GameObject dialogueBox;
-    public string dialogueText;
+    public FirstPersonController fps;
+    public InteractionMenu interaction;
+    public string dialogueText1;
+
+    public string dialogueToSend;
 
     private void Start()
     {
-        dialogueBox = GameObject.Find("DialogueBox");
+        interaction = GameObject.Find("Canvas").GetComponent<InteractionMenu>();
+        fps = GameObject.Find("Player").GetComponent<FirstPersonController>();
+    }
+
+    public void PickDialogue()
+    {
+        dialogueToSend = dialogueText1;
     }
     public override void OnFocus()
     {
-
-        Debug.Log("LOOKING AT " + gameObject.name);
     }
     public override void OnInteract()
     {
-        if (!isInteracting)
+        if (interaction.monsterMind == null)
         {
+            interaction.Initialize(this.gameObject);
+            Debug.Log(this.gameObject);
             Debug.Log("interacting");
-            StartCoroutine(TestInteraction());
         }
-        else Debug.Log("already interacting");
+        else Debug.Log("already interracting with other");
     }
     public override void OnLoseFocus()
     {
-        if (isInteracting)
+        if (interaction.menu.activeInHierarchy)
         {
-            StopCoroutine(TestInteraction());
-            isInteracting = false;
-            dialogueBox.SetActive(false);
-
+            interaction.Leave();
         }
-        Debug.Log("STOPPED LOOKING AT " + gameObject.name);
+        else Debug.Log("already running coroutine");
     }
-    private IEnumerator TestInteraction()
-    {
-        isInteracting = !isInteracting;
-        dialogueBox.SetActive(true);
-        TextMeshProUGUI tmp = dialogueBox.GetComponent<TextMeshProUGUI>();
-        tmp.text = dialogueText;
-        yield return new WaitForSeconds(3f);
-        tmp.text = null;
-        dialogueBox.SetActive(false);
-        isInteracting = !isInteracting;
-        yield return null;
-    }
+
 }

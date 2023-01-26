@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MonsterMind : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public int affection;
+    public bool likesTalking;
     void Start()
     {
         

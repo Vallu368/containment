@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class FirstPersonController : MonoBehaviour
 {
-    public bool CanMove { get; private set; } = true; //if player is in control
+    public bool canMove = true; //if player is in control
+    public bool menuOpen = false; //for mouse lock
+
     private bool isSprinting => canSprint && Input.GetKey(sprintKey); //is true if canSprint is true and sprintKey is pressed
     private bool shouldJump => Input.GetKeyDown(jumpKey) && characterController.isGrounded; //same as above but jump
     private bool shouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && characterController.isGrounded; 
@@ -77,7 +79,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private Vector3 interactionRayPoint = default;
     [SerializeField] private float interactionDistance = default;
     [SerializeField] private LayerMask interactionLayer = default;
-    private Interactable currentInteractable;
+    public Interactable currentInteractable;
 
     // Sliding Parameters
 
@@ -116,12 +118,21 @@ public class FirstPersonController : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         defaultYPos = playerCamera.transform.localPosition.y; //get default y position
         defaultFOV = playerCamera.fieldOfView; //get default fov
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
     private void Update()
     {
-        if (CanMove) //if !canmove nothing happens here :3
+        
+        if (!menuOpen)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
+        }
+        if (canMove) //if !canmove nothing happens here :3
         {
             HandleMovementInput();
             HandleMouseLook();
