@@ -14,6 +14,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private bool canJump = true;
     [SerializeField] private bool canCrouch = true;
     [SerializeField] private bool canUseHeadbob = true;
+    [SerializeField] private bool willSlideOnSlopes = true;
 
 
 
@@ -29,6 +30,7 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float walkSpeed = 3.0f;
     [SerializeField] private float sprintSpeed = 6.0f;
     [SerializeField] private float crouchSpeed = 1.5f;
+    [SerializeField] private float slopeSpeed = 8.0f;
 
 
     [Header("Look Parameters")]
@@ -62,6 +64,25 @@ public class FirstPersonController : MonoBehaviour
 
     private float defaultYPos = 0;
     private float timer;
+
+    // Sliding Parameters
+
+    private Vector3 hitPointNormal; //normal position of the surface that youre currently walking on /angle of the floor
+    private bool isSliding
+    {
+        get
+        {
+            if(characterController.isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 2f))
+            {
+                hitPointNormal = slopeHit.normal;
+                return Vector3.Angle(hitPointNormal, Vector3.up) > characterController.slopeLimit;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 
 
 
@@ -149,6 +170,11 @@ public class FirstPersonController : MonoBehaviour
     {
         if(!characterController.isGrounded) //if not grounded you fall
             moveDirection.y -= gravity * Time.deltaTime;
+
+        if(willSlideOnSlopes && isSliding)
+        {
+            moveDirection += new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
+        }
 
         characterController.Move(moveDirection * Time.deltaTime);
 
