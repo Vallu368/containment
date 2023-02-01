@@ -5,71 +5,83 @@ using TMPro;
 
 public class InteractionMenu : MonoBehaviour
 {
-    public FirstPersonController fps;
-    public MonsterMind monsterMind;
     public GameObject menu;
-    public GameObject dialogueBox;
+    public bool isMenuOpen = false;
+    public MonsterMind currentMonster;
+    private FirstPersonController fps;
 
-
-    private void Awake()
+    private GameObject dialogueBox;
+    private TextMeshProUGUI dialogueText;
+    public bool isInteracting;
+    void Start()
     {
-        dialogueBox = GameObject.Find("DialogueBox");
         menu = GameObject.Find("InteractionMenu");
-        fps = GameObject.Find("Player").GetComponent<FirstPersonController>();
         menu.SetActive(false);
+        fps = GameObject.Find("Player").GetComponent<FirstPersonController>();
+        dialogueBox = GameObject.Find("DialogueBox");
+        dialogueText = GameObject.Find("DialogueText").GetComponent<TextMeshProUGUI>();
+        dialogueBox.SetActive(false);
+        dialogueText.text = null;
     }
-
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
-    }
-
-    public void Initialize(GameObject obj)
-    {
-        fps.menuOpen = true;
-        Debug.Log("initializing " + obj);
-        menu.SetActive(true);
-        if (obj.GetComponent<MonsterMind>() != null)
+        if (isMenuOpen)
         {
-            monsterMind = obj.GetComponent<MonsterMind>();
+            fps.menuOpen = true;
         }
+        if (!isMenuOpen)
+        {
+            fps.menuOpen = false;
+        }
+    }
+    public void OpenInteractionMenu()
+    {
+        isMenuOpen = true;
+        menu.SetActive(true);
+    }
+    public void CloseInteractionMenu()
+    {
+        isMenuOpen = false;
+        menu.SetActive(false);
     }
     public void TalkTo()
     {
-        StartCoroutine(TalkCoroutine());
-    }
-    public void Leave()
-    {
-        fps.menuOpen = false;
-        if (menu.activeInHierarchy)
+        if (currentMonster.canTalk)
         {
-            menu.SetActive(false);
-        }
-        monsterMind = null;
-
-    }
-    private IEnumerator TalkCoroutine()
-    {
-        fps.menuOpen = false;
-        menu.SetActive(false);
-        dialogueBox.SetActive(true);
-        TextMeshProUGUI text = dialogueBox.GetComponent<TextMeshProUGUI>();
-        monsterMind.GetComponent<TestInteractable>().PickDialogue();
-        text.text = monsterMind.gameObject.GetComponent<TestInteractable>().dialogueToSend;
-        yield return new WaitForSeconds(5f);
-        if (monsterMind.likesTalking)
-        {
-            monsterMind.affection++;
+            StartCoroutine(TalkToCoroutine());
         }
         else
         {
-            monsterMind.affection = monsterMind.affection - 1;
+            Debug.Log("cant talk coroutine here");
         }
-        Leave();
-        dialogueBox.SetActive(false);
-        text.text = null;
-        Debug.Log("done talking");
-        yield return null;
     }
+    private IEnumerator TalkToCoroutine()
+    {
+        isInteracting = true;
+        dialogueBox.SetActive(true);
+        currentMonster.CheckDialogueText();
+        dialogueText.text = currentMonster.lineToSend;
+        yield return new WaitForSeconds(5f);
+        dialogueBox.SetActive(false);
+        dialogueText.text = null;
+        if (!currentMonster.alreadyTalked && currentMonster.likesTalking)
+        {
+            currentMonster.IncreaseAffection();
+        }
+        currentMonster.alreadyTalked = true;
+        isInteracting = false;
+    }
+    public void Use()
+    {
+
+    }
+    public void Inspect()
+    {
+
+    }
+    public void Feed()
+    {
+
+    }
+
 }

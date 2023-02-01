@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FirstPersonController : MonoBehaviour
 {
-    public bool canMove = true; //if player is in control
+    private bool canMove = true; //if player is in control
     public bool menuOpen = false; //for mouse lock
 
     private bool isSprinting => canSprint && Input.GetKey(sprintKey); //is true if canSprint is true and sprintKey is pressed
@@ -175,7 +175,7 @@ public class FirstPersonController : MonoBehaviour
         rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit); //clamp between looklimits so you cant turn camera 360
         playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0); //apply rotation x
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeedX, 0); //sideways rotation
-    }
+    } 
     private void HandleJump()
     {
         if(shouldJump)
